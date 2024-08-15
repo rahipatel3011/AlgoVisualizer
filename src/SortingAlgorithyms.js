@@ -1,6 +1,5 @@
 export async function selectionSort(dataList, callback, delay, stopFlag) {
   return new Promise(async (resolve) => {
-    console.log("selection");
     for (let i = 0; i < dataList.length; i++) {
       let min_idx = i;
       for (let j = i + 1; j < dataList.length; j++) {
