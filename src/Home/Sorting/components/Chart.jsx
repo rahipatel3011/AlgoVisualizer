@@ -1,5 +1,12 @@
-import { bubbleSort, insertionSort, selectionSort, mergeSort } from "@/SortingAlgorithyms";
+import {
+  bubbleSort,
+  insertionSort,
+  selectionSort,
+  mergeSort,
+} from "@/SortingAlgorithyms";
 import React, { useEffect, useRef, useState } from "react";
+
+const DELAY = 5;
 
 const Chart = ({
   data,
@@ -11,25 +18,39 @@ const Chart = ({
 }) => {
   useEffect(() => {
     async function runAlgo() {
+      const start_time = performance.now();
+
       isStart &&
         algorithym === "Selection" &&
-        selectionSort(data, setList, 200, stopFlag).then((resp) =>
-          setIsStart(false)
-        );
+        selectionSort(data, setList, DELAY, stopFlag).then((resp) => {
+          setIsStart(false);
+          const end_time = performance.now();
+          console.log(end_time - start_time);
+        });
       isStart &&
         algorithym === "Bubble" &&
-        bubbleSort(data, setList, 200, stopFlag).then((resp) =>
-          setIsStart(false)
-        );
+        bubbleSort(data, setList, DELAY, stopFlag).then((resp) => {
+          setIsStart(false);
+          const end_time = performance.now();
+          console.log(end_time - start_time);
+        });
       isStart &&
         algorithym === "Insertion" &&
-        insertionSort(data, setList, 200, stopFlag).then((resp) =>
-          setIsStart(false)
-        );
+        insertionSort(data, setList, DELAY, stopFlag).then((resp) => {
+          setIsStart(false);
+          const end_time = performance.now();
+          console.log(end_time - start_time);
+        });
 
       isStart &&
         algorithym === "Merge" &&
-        mergeSort(data, setList, 200, stopFlag, 0, data.length - 1);
+        mergeSort(data, setList, DELAY, stopFlag, 0, data.length - 1).then(
+          (resp) => {
+            setIsStart(false);
+            const end_time = performance.now();
+            console.log(end_time - start_time);
+          }
+        );
     }
 
     runAlgo();

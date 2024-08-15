@@ -1,137 +1,143 @@
-export async function selectionSort(
-  dataList,
-  callback,
-  delay,
-  stopFlag,
-  i = 0
-) {
-  return new Promise((resolve, reject) => {
-    if (i >= dataList.length - 1 || !stopFlag.current) {
-      resolve("resolved");
-      return;
-    }
-    let min_idx = i;
-    for (let j = i + 1; j < dataList.length; j++) {
-      if (dataList[min_idx] > dataList[j]) {
-        min_idx = j;
+export async function selectionSort(dataList, callback, delay, stopFlag) {
+  return new Promise(async (resolve) => {
+    console.log("selection");
+    for (let i = 0; i < dataList.length; i++) {
+      let min_idx = i;
+      for (let j = i + 1; j < dataList.length; j++) {
+        if (!stopFlag.current) {
+          return;
+        }
+        if (dataList[min_idx] > dataList[j]) {
+          min_idx = j;
+        }
+        await sleep(delay);
       }
-    }
 
-    // Swap elements
-    let temp = dataList[min_idx];
-    dataList[min_idx] = dataList[i];
-    dataList[i] = temp;
+      // Swap elements
+      let temp = dataList[min_idx];
+      dataList[min_idx] = dataList[i];
+      dataList[i] = temp;
 
-    callback([...dataList]);
-    setTimeout(
-      () =>
-        selectionSort(dataList, callback, delay, stopFlag, i + 1).then(resolve),
-      delay
-    );
-  });
-}
-
-export async function bubbleSort(dataList, callback, delay, stopFlag, i = 0) {
-  return new Promise((resolve, reject) => {
-    if (i >= dataList.length - 1 || !stopFlag.current) {
-      resolve("resolved");
-      return;
-    }
-    for (let j = 0; j < dataList.length - i - 1; j++) {
-      if (dataList[j] > dataList[j + 1]) {
-        // swap element
-        let temp = dataList[j];
-        dataList[j] = dataList[j + 1];
-        dataList[j + 1] = temp;
-      }
-    }
-    callback([...dataList]);
-    setTimeout(
-      () =>
-        bubbleSort(dataList, callback, delay, stopFlag, i + 1).then(resolve),
-      delay
-    );
-  });
-}
-
-export async function insertionSort(
-  dataList,
-  callback,
-  delay,
-  stopFlag,
-  i = 1
-) {
-  return new Promise((resolve, reject) => {
-    if (i > dataList.length - 1 || !stopFlag.current) {
-      resolve("resolved");
-      return;
-    }
-    const curr = dataList[i]; // need to store in temo variable
-    let j = i - 1;
-    while (j >= 0 && dataList[j] > curr) {
-      dataList[j + 1] = dataList[j];
-      j = j - 1;
-      dataList[j + 1] = curr;
       callback([...dataList]);
     }
-
-    setTimeout(
-      async () =>
-        await insertionSort(dataList, callback, delay, stopFlag, i + 1).then(
-          resolve
-        ),
-      delay
-    );
+    resolve();
   });
 }
 
-// export async function mergeSort(dataList, callback, delay, stopFlag, i = 1) {}
+export async function bubbleSort(dataList, callback, delay, stopFlag) {
+  return new Promise(async (resolve) => {
+    for (let i = 0; i < dataList.length - 1; i++) {
+      for (let j = 0; j < dataList.length - i - 1; j++) {
+        if (!stopFlag.current) {
+          return;
+        }
 
-export function mergeSort(dataList, callback, delay, stopFlag, left, right) {
-  if (left >= right) {
+        if (dataList[j] > dataList[j + 1]) {
+          // swap element
+          let temp = dataList[j];
+          dataList[j] = dataList[j + 1];
+          dataList[j + 1] = temp;
+        }
+        callback([...dataList]);
+        await sleep(delay);
+      }
+    }
+    resolve();
+  });
+}
+
+export async function mergeSort(
+  dataList,
+  callback,
+  delay,
+  stopFlag,
+  left,
+  right
+) {
+  if (left >= right || !stopFlag.current) {
     return;
   }
+
   const mid = Math.floor(left + (right - left) / 2);
-  mergeSort(dataList, callback, delay, stopFlag, left, mid);
-  mergeSort(dataList, callback, delay, stopFlag, mid + 1, right);
 
-  merge(dataList, left, mid, right);
-  callback([...dataList]);
+  // Sort the first half
+  await mergeSort(dataList, callback, delay, stopFlag, left, mid);
+
+  // Sort the second half
+  await mergeSort(dataList, callback, delay, stopFlag, mid + 1, right);
+
+  // Merge the sorted halves and wait for it to complete
+  await merge(dataList, callback, delay, left, mid, right);
 }
 
-function merge(dataList, left, mid, right) {
-  let temp1 = new Array(mid - left + 1);
-  let temp2 = new Array(right - mid);
-  for (let i = 0; i < temp1.length; i++) temp1[i] = dataList[left + i];
-  for (let j = 0; j < temp2.length; j++) temp2[j] = dataList[mid + 1 + j];
-  let pointer1 = 0;
-  let pointer2 = 0;
-  let main_pointer = left;
+function merge(dataList, callback, delay, left, mid, right) {
+  return new Promise(async (resolve) => {
+    let temp1 = new Array(mid - left + 1);
+    let temp2 = new Array(right - mid);
 
-  while (pointer1 < temp1.length && pointer2 < temp2.length) {
-    if (temp1[pointer1] < temp2[pointer2]) {
-      dataList[main_pointer] = temp1[pointer1];
-      pointer1 += 1;
-    } else {
-      dataList[main_pointer] = temp2[pointer2];
-      pointer2 += 1;
+    for (let i = 0; i < temp1.length; i++) temp1[i] = dataList[left + i];
+    for (let j = 0; j < temp2.length; j++) temp2[j] = dataList[mid + 1 + j];
+
+    let pointer1 = 0;
+    let pointer2 = 0;
+    let main_pointer = left;
+
+    while (pointer1 < temp1.length && pointer2 < temp2.length) {
+      if (temp1[pointer1] <= temp2[pointer2]) {
+        dataList[main_pointer] = temp1[pointer1];
+        pointer1++;
+      } else {
+        dataList[main_pointer] = temp2[pointer2];
+        pointer2++;
+      }
+      main_pointer++;
+      callback([...dataList]);
+      await sleep(delay);
     }
-    main_pointer += 1;
-  }
 
-  while (pointer1 < temp1.length) {
-    dataList[main_pointer] = temp1[pointer1];
-    pointer1 += 1;
-    main_pointer += 1;
-  }
-
-  while (pointer2 < temp2.length) {
-    dataList[main_pointer] = temp2[pointer2];
-    pointer2 += 1;
-    main_pointer += 1;
-  }
-  console.log(dataList);
+    while (pointer1 < temp1.length) {
+      dataList[main_pointer] = temp1[pointer1];
+      pointer1++;
+      main_pointer++;
+      callback([...dataList]);
+      await sleep(delay);
+    }
+    while (pointer2 < temp2.length) {
+      dataList[main_pointer] = temp2[pointer2];
+      pointer2++;
+      main_pointer++;
+      callback([...dataList]);
+      await sleep(delay);
+    } // Final callback after merging is done
+    resolve(); // Resolve the promise when merging is done
+  });
 }
+
+export async function insertionSort(dataList, callback, delay, stopFlag) {
+  return new Promise(async (resolve) => {
+    for (let i = 1; i < dataList.length; i++) {
+      let key = dataList[i];
+      let j = i - 1;
+
+      // Move elements of dataList[0..i-1], that are greater than key,
+      // to one position ahead of their current position
+      while (j >= 0 && dataList[j] > key) {
+        if (!stopFlag.current) {
+          return;
+        }
+        dataList[j + 1] = dataList[j];
+        dataList[j] = key;
+        callback([...dataList]);
+        await sleep(delay);
+        j = j - 1;
+      }
+    }
+
+    resolve();
+  });
+}
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // export function insertionSort(
 //   dataList,
