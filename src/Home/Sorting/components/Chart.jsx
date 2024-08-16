@@ -16,6 +16,7 @@ const Chart = ({
   stopFlag,
   setIsStart,
 }) => {
+  console.log(data);
   useEffect(() => {
     async function runAlgo() {
       const start_time = performance.now();

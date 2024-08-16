@@ -22,6 +22,8 @@ import { Textarea } from "@/components/ui/textarea";
 //   16, 154, 22, 1, 47, 41, 94, 37, 96, 85, 10, 26, 73, 79, 44, 100, 60,
 // ];
 
+let intList;
+
 function Sorting() {
   const [selectedAlgo, setSelectedAlgo] = useState();
   const [dataList, setDataList] = useState([]);
@@ -31,15 +33,14 @@ function Sorting() {
   const stopFlag = useRef(false);
 
   const handleOnReset = () => {
-    console.log(dataList);
     stopFlag.current = false;
     setIsStart(false);
-    setDataList([dataList]);
+    setDataList(intList);
   };
 
   const handleOnStart = () => {
     setIsStart(true);
-    setDataList([...dataList]);
+    setDataList(dataList);
   };
 
   const handleTextareaChange = (e) => {
@@ -47,6 +48,7 @@ function Sorting() {
     let data = text.split(",").filter((value) => value != "");
     data.forEach((value, index) => (data[index] = parseInt(value)));
     if (data.every(Number.isInteger)) {
+        intList = data;
       setDataList(data);
       setIsError(false);
     } else {
