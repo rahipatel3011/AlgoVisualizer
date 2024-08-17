@@ -19,8 +19,11 @@ function Header() {
         <NavigationMenu>
           <NavigationMenuList>
             <NavigationMenuItem>
-              <Link to="/sorting">
+              <Link to="/sort">
                 <NavigationMenuTrigger>Sort Algorithyms</NavigationMenuTrigger>
+              </Link>
+              <Link to="/graph">
+                <NavigationMenuTrigger>Graph Algorithyms</NavigationMenuTrigger>
               </Link>
             </NavigationMenuItem>
           </NavigationMenuList>

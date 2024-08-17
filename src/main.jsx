@@ -5,6 +5,7 @@ import './index.css'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Home from './Home/Home.jsx'
 import Sorting from './Home/Sorting/Sorting.jsx'
+import Graph from './Home/Graph/Graph.jsx'
 
 
 const router = createBrowserRouter([
@@ -16,8 +17,12 @@ const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: '/sorting',
+        path: '/sort',
         element: <Sorting />
+      },
+      {
+        path: '/graph',
+        element: <Graph />
       }
     ] 
   }

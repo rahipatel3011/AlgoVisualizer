@@ -3,7 +3,7 @@ import {
   insertionSort,
   selectionSort,
   mergeSort,
-} from "@/SortingAlgorithyms";
+} from "../../../Algorithyms/SortingAlgorithyms";
 import React, { useEffect, useRef, useState } from "react";
 
 const DELAY = 5;
@@ -16,7 +16,6 @@ const Chart = ({
   stopFlag,
   setIsStart,
 }) => {
-  console.log(data);
   useEffect(() => {
     async function runAlgo() {
       const start_time = performance.now();

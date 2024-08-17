@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import Chart from "./components/Chart";
-import SelectionSort from "./components/SelectionSort";
 import { Loader2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -45,7 +44,7 @@ function Sorting() {
 
   const handleTextareaChange = (e) => {
     const text = e.target.value;
-    let data = text.split(",").filter((value) => value != "");
+    let data = text.split(",").filter((value) => value !== "");
     data.forEach((value, index) => (data[index] = parseInt(value)));
     if (data.every(Number.isInteger)) {
         intList = data;
