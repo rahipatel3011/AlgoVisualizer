@@ -8,9 +8,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Loader2, Target } from "lucide-react";
+import {
+  ChevronRight,
+  Loader2,
+  Pause,
+  Play,
+  Square,
+  Target,
+} from "lucide-react";
 import Node from "./components/Node.jsx";
 import { bfs, dfs } from "@/Algorithyms/GraphAlgorithyms.js";
+import RoundButton from "@/components/custom/RoundButton.jsx";
 
 const START_NODE_ROW = 3;
 const START_NODE_COL = 15;
@@ -22,32 +30,15 @@ const MOUSE_ACTIONS = {
   isFinishMove: false,
   isMousePressed: false,
 };
+const INIT_GRID = createInitialGrid();
 
 function Graph() {
   const [selectedAlgo, setSelectedAlgo] = useState();
-  const [grid, setGrid] = useState([]);
+  const [grid, setGrid] = useState(INIT_GRID);
   const [mouseStatus, setMouseStatus] = useState(MOUSE_ACTIONS);
   const [isStartPressed, setIsStartPressed] = useState(false);
+  const stopFlag = useRef(false);
   // const [isError, setIsError] = useState(false);
-
-  // console.log("Graph");
-  useEffect(() => {
-    const mainGrid = [];
-    for (let row = 0; row < 20; row++) {
-      const currentRow = [];
-      for (let col = 0; col < 50; col++) {
-        currentRow.push({
-          col: col,
-          row: row,
-          isStart: row === START_NODE_ROW && col === START_NODE_COL,
-          isFinish: row === FINISH_NODE_ROW && col === FINISH_NODE_COL,
-          isVisited: false,
-        });
-      }
-      mainGrid.push(currentRow);
-    }
-    setGrid(mainGrid);
-  }, []);
 
   const handleMouseUp = (row, col) => {
     // const updatedGrid = updateGrid(grid, row, col);
@@ -67,30 +58,44 @@ function Graph() {
     setGrid(updatedGrid);
   };
 
-  function handleStartButton() {
-    dfs(
-      grid,
-      grid[START_NODE_ROW][START_NODE_COL],
-      setGrid
-    );
+  function handleOnReset() {
+    stopFlag.current = true;
+    setIsStartPressed(false);
+    setGrid(INIT_GRID);
   }
+
+  function handleStartButton() {
+    setIsStartPressed(true);
+  }
+
+  useEffect(() => {
+    if (isStartPressed) {
+      console.log(grid);
+      selectedAlgo === "BFS" &&
+        bfs(grid, grid[START_NODE_ROW][START_NODE_COL], setGrid, stopFlag);
+      selectedAlgo === "DFS" &&
+        dfs(grid, grid[START_NODE_ROW][START_NODE_COL], setGrid, stopFlag);
+    }
+
+    if(!isStartPressed){
+
+      return ()=>{stopFlag.current=false}
+    }
+  }, [isStartPressed, selectedAlgo, stopFlag]);
 
   return (
     <div className="text-center">
-      <div className="flex justify-center m-3">
+      <div className="flex gap-2 justify-center m-3 h-10">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <>
-              <Button variant="outline" disabled={isStartPressed}>
-                {" "}
-                {isStartPressed ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  (selectedAlgo || "Select") + " Algorithym"
-                )}
-              </Button>
-              <Button onClick={() => handleStartButton()}>Start</Button>
-            </>
+            <Button variant="outline" disabled={isStartPressed}>
+              {" "}
+              {isStartPressed ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                (selectedAlgo || "Select") + " Algorithym"
+              )}
+            </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuItem onClick={() => setSelectedAlgo("BFS")}>
@@ -107,6 +112,20 @@ function Graph() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        {selectedAlgo && (
+          <RoundButton
+            className={
+              isStartPressed
+                ? "bg-red-500 hover:bg-red-700"
+                : "bg-green-500 hover:bg-green-700"
+            }
+            onClick={() => handleStartButton()}
+            disabled={!selectedAlgo}
+          >
+            {isStartPressed ? <Pause /> : <Play />}
+          </RoundButton>
+        )}
+        <Button onClick={handleOnReset}>Reset</Button>
       </div>
       <div className="grid">
         {grid.map((row, rowIdx) => {
@@ -114,7 +133,6 @@ function Graph() {
             <div className="lg:h-[25px] md:h-[15px] sm:h-[10px]" key={rowIdx}>
               {row.map((node, nodeIdx) => {
                 const { row, col, isFinish, isStart, isWall, isVisited } = node;
-                // isVisited && console.log(row,col);
                 return (
                   <Node
                     key={nodeIdx}
@@ -156,4 +174,22 @@ function updateGrid(grid, row, col) {
   //updated current node in grid
   newGrid[row][col] = currNode;
   return newGrid;
+}
+
+function createInitialGrid() {
+  const grid = [];
+  for (let row = 0; row < 20; row++) {
+    const currentRow = [];
+    for (let col = 0; col < 50; col++) {
+      currentRow.push({
+        col: col,
+        row: row,
+        isStart: row === START_NODE_ROW && col === START_NODE_COL,
+        isFinish: row === FINISH_NODE_ROW && col === FINISH_NODE_COL,
+        isVisited: false,
+      });
+    }
+    grid.push(currentRow);
+  }
+  return grid;
 }

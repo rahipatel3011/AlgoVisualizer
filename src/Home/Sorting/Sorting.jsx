@@ -47,14 +47,13 @@ function Sorting() {
     let data = text.split(",").filter((value) => value !== "");
     data.forEach((value, index) => (data[index] = parseInt(value)));
     if (data.every(Number.isInteger)) {
-        intList = data;
+      intList = data;
       setDataList(data);
       setIsError(false);
     } else {
       setIsError(true);
     }
   };
-
   return (
     <div>
       <div className="flex flex-col mx-48 m-5 justify-center">

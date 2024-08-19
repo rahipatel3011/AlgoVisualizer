@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./Node.css";
 
+let timer;
 
 function Node({
   col,
@@ -13,9 +14,8 @@ function Node({
   onMouseUp,
   row,
   className,
-  children
+  children,
 }) {
-
   const extraClassName = isFinish
     ? "node-finish"
     : isStart
@@ -24,12 +24,25 @@ function Node({
     ? "bg-black"
     : "";
 
-    if(isVisited){
-      document.getElementById(`node-${row}-${col}`).classList.add("bg-yellow-300");
-      setTimeout(()=>{
-        document.getElementById(`node-${row}-${col}`).classList.replace("bg-yellow-300","node-visited")
-      }, 0.5);
-    }
+  if (isVisited) {
+    document
+      .getElementById(`node-${row}-${col}`)
+      .classList.add("bg-yellow-300");
+    setTimeout(() => {
+      document
+        .getElementById(`node-${row}-${col}`)
+        .classList.replace("bg-yellow-300", "node-visited");
+    }, 1);
+  }
+
+  useEffect(() => {
+    // console.log("useEffect");
+    setTimeout(() => {
+      document
+        .getElementById(`node-${row}-${col}`)
+        .classList.remove("node-visited");
+    }, 1);
+  }, [isVisited]);
 
   return (
     <div
@@ -38,7 +51,9 @@ function Node({
       onMouseDown={() => onMouseDown(row, col)}
       onMouseEnter={() => onMouseEnter(row, col)}
       onMouseUp={() => onMouseUp()}
-    >{children}</div>
+    >
+      {children}
+    </div>
   );
 }
 
