@@ -3,7 +3,7 @@ import {
   insertionSort,
   selectionSort,
   mergeSort,
-} from "../../../Algorithyms/SortingAlgorithyms";
+} from "../../../Algorithyms/SortingAlgorithms";
 import React, { useEffect, useRef, useState } from "react";
 
 const DELAY = 5;

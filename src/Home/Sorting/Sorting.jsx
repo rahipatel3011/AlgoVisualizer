@@ -76,7 +76,7 @@ function Sorting() {
               {isStart ? (
                 <Loader2 className="animate-spin" />
               ) : (
-                (selectedAlgo || "Select") + " Algorithym"
+                (selectedAlgo || "Select") + " Algorithm"
               )}
             </Button>
           </DropdownMenuTrigger>

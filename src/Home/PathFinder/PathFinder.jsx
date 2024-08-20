@@ -17,13 +17,7 @@ import {
   Target,
 } from "lucide-react";
 import Node from "./components/Node.jsx";
-import {
-  animateAlgorithm,
-  bfs,
-  dfs,
-  dijkstra,
-  removeDijkstraAnimation,
-} from "@/Algorithyms/GraphAlgorithms.js";
+import { bfs, dfs, dijkstra } from "@/Algorithyms/GraphAlgorithms.js";
 import RoundButton from "@/components/custom/RoundButton.jsx";
 
 const START_NODE_ROW = 3;
@@ -38,9 +32,9 @@ const MOUSE_ACTIONS = {
 };
 const INIT_GRID = createInitialGrid();
 
-function Graph() {
+function PathFinder() {
   const [selectedAlgo, setSelectedAlgo] = useState();
-  const [grid, setGrid] = useState(createInitialGrid());
+  const [grid, setGrid] = useState(INIT_GRID);
   const [mouseStatus, setMouseStatus] = useState(MOUSE_ACTIONS);
   const [isStartPressed, setIsStartPressed] = useState(false);
   const stopFlag = useRef(false);
@@ -66,66 +60,29 @@ function Graph() {
 
   function handleOnReset() {
     stopFlag.current = true;
-    removeDijkstraAnimation();
     setIsStartPressed(false);
-
-    // setGrid(INIT_GRID);
+    setGrid(INIT_GRID);
   }
 
   function handleStartButton() {
-    removeDijkstraAnimation();
     setIsStartPressed(true);
+    console.log(isStartPressed);
   }
 
-  if (isStartPressed) {
-    if (selectedAlgo === "BFS") {
-      const inOrderVisitedNodes = bfs(
-        grid,
-        grid[START_NODE_ROW][START_NODE_COL]
-      );
-      
-      animateAlgorithm(inOrderVisitedNodes).then((resp) =>
-        setIsStartPressed(false)
-      );
-    } else if (selectedAlgo === "Dijkstra") {
-      const [inOrderVisitedNodes, shortestPath] = dijkstra(
-        grid,
-        grid[START_NODE_ROW][START_NODE_COL]
-      );
-      animateAlgorithm(inOrderVisitedNodes, shortestPath).then((resp) =>
-        setIsStartPressed(false)
-      );
-    }else if (selectedAlgo === "DFS") {
-      const inOrderVisitedNodes = dfs(
-        grid,
-        grid[START_NODE_ROW][START_NODE_COL]
-      );
-      
-      animateAlgorithm(inOrderVisitedNodes).then((resp) =>
-        setIsStartPressed(false)
-      );
+  useEffect(() => {
+    if (isStartPressed) {
+      selectedAlgo === "BFS" &&
+        bfs(grid, grid[START_NODE_ROW][START_NODE_COL], setGrid, stopFlag);
+      selectedAlgo === "DFS" &&
+        dfs(grid, grid[START_NODE_ROW][START_NODE_COL], setGrid, stopFlag);
     }
-  }
 
-  // useEffect(() => {
-  //   if (isStartPressed) {
-  //     let listOfNodes;
-  //     // selectedAlgo === "BFS" &&
-  //     //   bfs(grid, grid[START_NODE_ROW][START_NODE_COL], setGrid, stopFlag);
-  //     // selectedAlgo === "DFS" &&
-  //     //   dfs(grid, grid[START_NODE_ROW][START_NODE_COL], setGrid, stopFlag);
-  //     // if (selectedAlgo === "Dijkstra") {
-  //     //   listOfNodes=dijkstra(grid, grid[START_NODE_ROW][START_NODE_COL], setGrid, stopFlag);
-  //     // }
-  //     // console.log(listOfNodes);
-  //   }
-
-  //   if (!isStartPressed) {
-  //     return () => {
-  //       stopFlag.current = false;
-  //     };
-  //   }
-  // }, [isStartPressed, selectedAlgo, stopFlag]);
+    if (!isStartPressed) {
+      return () => {
+        stopFlag.current = false;
+      };
+    }
+  }, [isStartPressed, selectedAlgo, stopFlag]);
 
   return (
     <div className="text-center">
@@ -137,7 +94,7 @@ function Graph() {
               {isStartPressed ? (
                 <Loader2 className="animate-spin" />
               ) : (
-                (selectedAlgo || "Select") + " Algorithm"
+                (selectedAlgo || "Select") + " Algorithym"
               )}
             </Button>
           </DropdownMenuTrigger>
@@ -169,11 +126,7 @@ function Graph() {
             <Play disabled={isStartPressed} />
           </RoundButton>
         )}
-        {selectedAlgo && (
-          <Button onClick={handleOnReset} disabled={isStartPressed}>
-            Reset
-          </Button>
-        )}
+        <Button onClick={handleOnReset}>Reset</Button>
       </div>
       <div className="grid">
         {grid.map((row, rowIdx) => {
@@ -185,7 +138,6 @@ function Graph() {
                   <Node
                     key={nodeIdx}
                     col={col}
-                    row={row}
                     isFinish={isFinish}
                     isStart={isStart}
                     isWall={isWall}
@@ -194,6 +146,7 @@ function Graph() {
                     onMouseDown={(row, col) => handleMouseDown(row, col)}
                     onMouseEnter={(row, col) => handleMouseEnter(row, col)}
                     onMouseUp={() => handleMouseUp()}
+                    row={row}
                   >
                     {isStart && <ChevronRight size={24} />}
                     {!isStart && isFinish && <Target size={24} />}
@@ -208,7 +161,7 @@ function Graph() {
   );
 }
 
-export default Graph;
+export default PathFinder;
 
 function updateGrid(grid, row, col) {
   const newGrid = grid.slice();
