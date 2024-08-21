@@ -8,14 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import {
-  ChevronRight,
-  Loader2,
-  Pause,
-  Play,
-  Square,
-  Target,
-} from "lucide-react";
+import { ChevronRight, Loader2, Play, Target } from "lucide-react";
 import Node from "./components/Node.jsx";
 import {
   animateAlgorithm,
@@ -36,7 +29,6 @@ const MOUSE_ACTIONS = {
   isFinishMove: false,
   isMousePressed: false,
 };
-const INIT_GRID = createInitialGrid();
 
 function Graph() {
   const [selectedAlgo, setSelectedAlgo] = useState();
@@ -68,8 +60,7 @@ function Graph() {
     stopFlag.current = true;
     removeDijkstraAnimation();
     setIsStartPressed(false);
-
-    // setGrid(INIT_GRID);
+    setGrid(createInitialGrid());
   }
 
   function handleStartButton() {
@@ -78,32 +69,25 @@ function Graph() {
   }
 
   if (isStartPressed) {
+    let inOrderVisitedNodes, shortestPath;
     if (selectedAlgo === "BFS") {
-      const inOrderVisitedNodes = bfs(
-        grid,
-        grid[START_NODE_ROW][START_NODE_COL]
-      );
-      
-      animateAlgorithm(inOrderVisitedNodes).then((resp) =>
-        setIsStartPressed(false)
-      );
+      inOrderVisitedNodes = bfs(grid, grid[START_NODE_ROW][START_NODE_COL]);
     } else if (selectedAlgo === "Dijkstra") {
-      const [inOrderVisitedNodes, shortestPath] = dijkstra(
+      [inOrderVisitedNodes, shortestPath] = dijkstra(
         grid,
         grid[START_NODE_ROW][START_NODE_COL]
       );
+    } else if (selectedAlgo === "DFS") {
+      inOrderVisitedNodes = dfs(grid, grid[START_NODE_ROW][START_NODE_COL]);
+    }
+
+    if (inOrderVisitedNodes) {
       animateAlgorithm(inOrderVisitedNodes, shortestPath).then((resp) =>
         setIsStartPressed(false)
       );
-    }else if (selectedAlgo === "DFS") {
-      const inOrderVisitedNodes = dfs(
-        grid,
-        grid[START_NODE_ROW][START_NODE_COL]
-      );
-      
-      animateAlgorithm(inOrderVisitedNodes).then((resp) =>
-        setIsStartPressed(false)
-      );
+    } else {
+      alert("There is no path from start to finish node");
+      setIsStartPressed(false);
     }
   }
 

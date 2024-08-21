@@ -18,6 +18,7 @@ export function bfs(grid, startNode) {
     const neighbourNodes = getClosestNodes(newGrid, currNode, queue);
     queue.push(...neighbourNodes);
   }
+  return undefined
 }
 
 export function dfs(grid, startNode) {
@@ -41,6 +42,7 @@ export function dfs(grid, startNode) {
     const neighbourNodes = getClosestNodes(newGrid, currNode, stack);
     stack.push(...neighbourNodes);
   }
+  return undefined
 }
 
 export function dijkstra(grid, startNode) {
@@ -65,7 +67,8 @@ export function dijkstra(grid, startNode) {
     queue.push(...neighbourNodes);
     sortList(queue);
   }
-  // TO-DO: need to handle if their is no path to finish
+  // return undefine if there is no path from start to finish node
+  return [undefined,undefined]
 }
 
 function findShortestPath(inOrderNodeList) {
