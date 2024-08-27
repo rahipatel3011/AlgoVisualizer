@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, Loader2, Play, Target } from "lucide-react";
-import Node from "./components/Node.jsx";
+import Node from "../components/Node.jsx";
 import {
   animateAlgorithm,
   bfs,
@@ -18,11 +18,8 @@ import {
   removeDijkstraAnimation,
 } from "@/Algorithyms/GraphAlgorithms.js";
 import RoundButton from "@/components/custom/RoundButton.jsx";
-
-const START_NODE_ROW = 3;
-const START_NODE_COL = 15;
-const FINISH_NODE_ROW = 9;
-const FINISH_NODE_COL = 25;
+import { createInitialGrid, createRandomGrid, updateGrid } from "@/lib/grid.js";
+import { START_NODE_COOR, FINISH_NODE_COOR } from "../../lib/constant.js";
 
 const MOUSE_ACTIONS = {
   isStartMove: false,
@@ -32,10 +29,13 @@ const MOUSE_ACTIONS = {
 
 function Graph() {
   const [selectedAlgo, setSelectedAlgo] = useState();
-  const [grid, setGrid] = useState(createInitialGrid());
+  const [selectedNode, setSelectedNode] = useState('block');
+  const [grid, setGrid] = useState(
+    createInitialGrid(START_NODE_COOR, FINISH_NODE_COOR)
+  );
   const [mouseStatus, setMouseStatus] = useState(MOUSE_ACTIONS);
   const [isStartPressed, setIsStartPressed] = useState(false);
-  const stopFlag = useRef(false);
+  // const stopFlag = useRef(false);
   // const [isError, setIsError] = useState(false);
 
   const handleMouseUp = (row, col) => {
@@ -45,22 +45,22 @@ function Graph() {
   };
 
   const handleMouseDown = (row, col) => {
-    const updatedGrid = updateGrid(grid, row, col);
+    const updatedGrid = updateGrid(grid, row, col, selectedNode);
     setMouseStatus({ ...mouseStatus, isMousePressed: true });
     setGrid(updatedGrid);
   };
 
   const handleMouseEnter = (row, col) => {
     if (!mouseStatus.isMousePressed) return;
-    const updatedGrid = updateGrid(grid, row, col);
+    const updatedGrid = updateGrid(grid, row, col, selectedNode);
     setGrid(updatedGrid);
   };
 
   function handleOnReset() {
-    stopFlag.current = true;
+    // stopFlag.current = true;
     removeDijkstraAnimation();
     setIsStartPressed(false);
-    setGrid(createInitialGrid());
+    setGrid(createInitialGrid(START_NODE_COOR, FINISH_NODE_COOR));
   }
 
   function handleStartButton() {
@@ -71,14 +71,20 @@ function Graph() {
   if (isStartPressed) {
     let inOrderVisitedNodes, shortestPath;
     if (selectedAlgo === "BFS") {
-      inOrderVisitedNodes = bfs(grid, grid[START_NODE_ROW][START_NODE_COL]);
+      inOrderVisitedNodes = bfs(
+        grid,
+        grid[START_NODE_COOR.row][START_NODE_COOR.col]
+      );
     } else if (selectedAlgo === "Dijkstra") {
       [inOrderVisitedNodes, shortestPath] = dijkstra(
         grid,
-        grid[START_NODE_ROW][START_NODE_COL]
+        grid[START_NODE_COOR.row][START_NODE_COOR.col]
       );
     } else if (selectedAlgo === "DFS") {
-      inOrderVisitedNodes = dfs(grid, grid[START_NODE_ROW][START_NODE_COL]);
+      inOrderVisitedNodes = dfs(
+        grid,
+        grid[START_NODE_COOR.row][START_NODE_COOR.col]
+      );
     }
 
     if (inOrderVisitedNodes) {
@@ -91,25 +97,10 @@ function Graph() {
     }
   }
 
-  // useEffect(() => {
-  //   if (isStartPressed) {
-  //     let listOfNodes;
-  //     // selectedAlgo === "BFS" &&
-  //     //   bfs(grid, grid[START_NODE_ROW][START_NODE_COL], setGrid, stopFlag);
-  //     // selectedAlgo === "DFS" &&
-  //     //   dfs(grid, grid[START_NODE_ROW][START_NODE_COL], setGrid, stopFlag);
-  //     // if (selectedAlgo === "Dijkstra") {
-  //     //   listOfNodes=dijkstra(grid, grid[START_NODE_ROW][START_NODE_COL], setGrid, stopFlag);
-  //     // }
-  //     // console.log(listOfNodes);
-  //   }
-
-  //   if (!isStartPressed) {
-  //     return () => {
-  //       stopFlag.current = false;
-  //     };
-  //   }
-  // }, [isStartPressed, selectedAlgo, stopFlag]);
+  function handleGenerateGrid() {
+    const generatedGrid = createRandomGrid(grid);
+    setGrid(generatedGrid);
+  }
 
   return (
     <div className="text-center">
@@ -140,31 +131,66 @@ function Graph() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
         {selectedAlgo && (
-          <RoundButton
-            className={
-              isStartPressed
-                ? "bg-slate-500"
-                : "bg-green-500 hover:bg-green-700"
-            }
-            onClick={() => handleStartButton()}
-            disabled={!selectedAlgo}
-          >
-            <Play disabled={isStartPressed} />
-          </RoundButton>
+          <>
+            <RoundButton
+              className={
+                isStartPressed
+                  ? "bg-slate-500"
+                  : "bg-green-500 hover:bg-green-700"
+              }
+              onClick={() => handleStartButton()}
+              disabled={!selectedAlgo}
+            >
+              <Play disabled={isStartPressed} />
+            </RoundButton>
+            <Button onClick={handleOnReset} disabled={isStartPressed}>
+              Reset
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleGenerateGrid}
+              disabled={isStartPressed}
+            >
+              Create Random Grid
+            </Button>
+          </>
         )}
-        {selectedAlgo && (
-          <Button onClick={handleOnReset} disabled={isStartPressed}>
-            Reset
-          </Button>
-        )}
+      </div>
+      <div className="flex flex-row gap-4 justify-center m-4">
+        <label className="flex items-center cursor-pointer" onClick={()=>setSelectedNode('light')}>
+          <input type="radio" name="traffic" value="light" className="hidden" />
+          <div className="w-[25px] h-[25px] bg-orange-300 border-2 border-black mr-2 choice-box"></div>
+          <span>Light Traffic</span>
+        </label>
+
+        <label className="flex items-center cursor-pointer" onClick={()=>setSelectedNode('heavy')}>
+          <input type="radio" name="traffic" value="heavy" className="hidden" />
+          <div className="w-[25px] h-[25px] bg-red-300 border-2 border-black mr-2 choice-box"></div>
+          <span>Heavy Traffic</span>
+        </label>
+
+        <label className="flex items-center cursor-pointer" onClick={()=>setSelectedNode('block')}>
+          <input type="radio" name="traffic" value="block" className="hidden" />
+          <div className="w-[25px] h-[25px] bg-black border-2 border-black mr-2 choice-box"></div>
+          <span>Block</span>
+        </label>
       </div>
       <div className="grid">
         {grid.map((row, rowIdx) => {
           return (
             <div className="lg:h-[25px] md:h-[15px] sm:h-[10px]" key={rowIdx}>
               {row.map((node, nodeIdx) => {
-                const { row, col, isFinish, isStart, isWall, isVisited } = node;
+                const {
+                  row,
+                  col,
+                  isFinish,
+                  isStart,
+                  isWall,
+                  isVisited,
+                  weight,
+                } = node;
                 return (
                   <Node
                     key={nodeIdx}
@@ -174,6 +200,7 @@ function Graph() {
                     isStart={isStart}
                     isWall={isWall}
                     isVisited={isVisited}
+                    weight={weight}
                     // mouseIsPressed={mouseIsPressed}
                     onMouseDown={(row, col) => handleMouseDown(row, col)}
                     onMouseEnter={(row, col) => handleMouseEnter(row, col)}
@@ -193,39 +220,3 @@ function Graph() {
 }
 
 export default Graph;
-
-function updateGrid(grid, row, col) {
-  const newGrid = grid.slice();
-  let currNode = { ...newGrid[row][col] }; // copying current node
-  if (currNode.isStart) {
-    // currNode = { ...currNode, isStart: !currNode.isStart };
-  } else if (!currNode.isStart && !currNode.isFinish) {
-    currNode = { ...currNode, isWall: !currNode.isWall };
-  }
-
-  //updated current node in grid
-  newGrid[row][col] = currNode;
-  return newGrid;
-}
-
-function createInitialGrid() {
-  const grid = [];
-  for (let row = 0; row < 20; row++) {
-    const currentRow = [];
-    for (let col = 0; col < 50; col++) {
-      currentRow.push({
-        col: col,
-        row: row,
-        isStart: row === START_NODE_ROW && col === START_NODE_COL,
-        isFinish: row === FINISH_NODE_ROW && col === FINISH_NODE_COL,
-        isVisited: false,
-        distance:
-          row === START_NODE_ROW && col === START_NODE_COL ? 0 : Infinity,
-        isWall: false,
-        weight: 1,
-      });
-    }
-    grid.push(currentRow);
-  }
-  return grid;
-}

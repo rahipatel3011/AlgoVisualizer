@@ -13,6 +13,7 @@ function Node({
   row,
   className,
   children,
+  weight
 }) {
   const extraClassName = isFinish
     ? "node-finish"
@@ -20,6 +21,10 @@ function Node({
     ? "node-start"
     : isWall
     ? "bg-black"
+    : weight === 2
+    ? "bg-orange-300"
+    : weight === 3
+    ? "bg-red-300"
     : "";
 
 

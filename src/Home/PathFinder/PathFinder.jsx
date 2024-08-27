@@ -8,33 +8,30 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { ChevronRight, Loader2, Play, Target } from "lucide-react";
+import Node from "../components/Node.jsx";
 import {
-  ChevronRight,
-  Loader2,
-  Pause,
-  Play,
-  Square,
-  Target,
-} from "lucide-react";
-import Node from "./components/Node.jsx";
-import { bfs, dfs, dijkstra } from "@/Algorithyms/GraphAlgorithms.js";
+  animateAlgorithm,
+  bfs,
+  dfs,
+  dijkstra,
+  removeDijkstraAnimation,
+} from "@/Algorithyms/GraphAlgorithms.js";
 import RoundButton from "@/components/custom/RoundButton.jsx";
+import { createInitialGrid, updateGrid } from "@/lib/grid.js";
+import {START_NODE_COOR, FINISH_NODE_COOR} from "../../lib/constant.js";
 
-const START_NODE_ROW = 3;
-const START_NODE_COL = 15;
-const FINISH_NODE_ROW = 9;
-const FINISH_NODE_COL = 25;
+
 
 const MOUSE_ACTIONS = {
   isStartMove: false,
   isFinishMove: false,
   isMousePressed: false,
 };
-const INIT_GRID = createInitialGrid();
 
-function PathFinder() {
+function Graph() {
   const [selectedAlgo, setSelectedAlgo] = useState();
-  const [grid, setGrid] = useState(INIT_GRID);
+  const [grid, setGrid] = useState(createInitialGrid({x:-1,y:-1},{x:-1,y:-1}));
   const [mouseStatus, setMouseStatus] = useState(MOUSE_ACTIONS);
   const [isStartPressed, setIsStartPressed] = useState(false);
   const stopFlag = useRef(false);
@@ -60,29 +57,40 @@ function PathFinder() {
 
   function handleOnReset() {
     stopFlag.current = true;
+    removeDijkstraAnimation();
     setIsStartPressed(false);
-    setGrid(INIT_GRID);
+    setGrid(createInitialGrid({x:-1,y:-1},{x:-1,y:-1}));
   }
 
   function handleStartButton() {
-    setIsStartPressed(true);
-    console.log(isStartPressed);
+    // removeDijkstraAnimation();
+    // setIsStartPressed(true);
+    // const updatedGrid = createMaze(grid);
+    // setGrid(updatedGrid);
   }
 
-  useEffect(() => {
-    if (isStartPressed) {
-      selectedAlgo === "BFS" &&
-        bfs(grid, grid[START_NODE_ROW][START_NODE_COL], setGrid, stopFlag);
-      selectedAlgo === "DFS" &&
-        dfs(grid, grid[START_NODE_ROW][START_NODE_COL], setGrid, stopFlag);
+  if (isStartPressed) {
+    let inOrderVisitedNodes, shortestPath;
+    if (selectedAlgo === "BFS") {
+      inOrderVisitedNodes = bfs(grid, grid[START_NODE_COOR.row][START_NODE_COOR.col]);
+    } else if (selectedAlgo === "Dijkstra") {
+      [inOrderVisitedNodes, shortestPath] = dijkstra(
+        grid,
+        grid[START_NODE_COOR.row][START_NODE_COOR.col]
+      );
+    } else if (selectedAlgo === "DFS") {
+      inOrderVisitedNodes = dfs(grid, grid[START_NODE_COOR.row][START_NODE_COOR.col]);
     }
 
-    if (!isStartPressed) {
-      return () => {
-        stopFlag.current = false;
-      };
+    if (inOrderVisitedNodes) {
+      animateAlgorithm(inOrderVisitedNodes, shortestPath).then((resp) =>
+        setIsStartPressed(false)
+      );
+    } else {
+      alert("There is no path from start to finish node");
+      setIsStartPressed(false);
     }
-  }, [isStartPressed, selectedAlgo, stopFlag]);
+  }
 
   return (
     <div className="text-center">
@@ -94,22 +102,22 @@ function PathFinder() {
               {isStartPressed ? (
                 <Loader2 className="animate-spin" />
               ) : (
-                (selectedAlgo || "Select") + " Algorithym"
+                (selectedAlgo || "Select") + " Algorithm"
               )}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => setSelectedAlgo("BFS")}>
-              BFS
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSelectedAlgo("DFS")}>
-              DFS
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSelectedAlgo("Dijkstra")}>
-              Dijkstra
+            <DropdownMenuItem onClick={() => setSelectedAlgo("Maze")}>
+              Maze
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setSelectedAlgo("")}>
-              another Sort
+            another
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setSelectedAlgo("")}>
+            another
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setSelectedAlgo("")}>
+              another
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -126,7 +134,11 @@ function PathFinder() {
             <Play disabled={isStartPressed} />
           </RoundButton>
         )}
-        <Button onClick={handleOnReset}>Reset</Button>
+        {selectedAlgo && (
+          <Button onClick={handleOnReset} disabled={isStartPressed}>
+            Reset
+          </Button>
+        )}
       </div>
       <div className="grid">
         {grid.map((row, rowIdx) => {
@@ -138,6 +150,7 @@ function PathFinder() {
                   <Node
                     key={nodeIdx}
                     col={col}
+                    row={row}
                     isFinish={isFinish}
                     isStart={isStart}
                     isWall={isWall}
@@ -146,7 +159,6 @@ function PathFinder() {
                     onMouseDown={(row, col) => handleMouseDown(row, col)}
                     onMouseEnter={(row, col) => handleMouseEnter(row, col)}
                     onMouseUp={() => handleMouseUp()}
-                    row={row}
                   >
                     {isStart && <ChevronRight size={24} />}
                     {!isStart && isFinish && <Target size={24} />}
@@ -161,40 +173,7 @@ function PathFinder() {
   );
 }
 
-export default PathFinder;
+export default Graph;
 
-function updateGrid(grid, row, col) {
-  const newGrid = grid.slice();
-  let currNode = { ...newGrid[row][col] }; // copying current node
-  if (currNode.isStart) {
-    // currNode = { ...currNode, isStart: !currNode.isStart };
-  } else if (!currNode.isStart && !currNode.isFinish) {
-    currNode = { ...currNode, isWall: !currNode.isWall };
-  }
 
-  //updated current node in grid
-  newGrid[row][col] = currNode;
-  return newGrid;
-}
 
-function createInitialGrid() {
-  const grid = [];
-  for (let row = 0; row < 20; row++) {
-    const currentRow = [];
-    for (let col = 0; col < 50; col++) {
-      currentRow.push({
-        col: col,
-        row: row,
-        isStart: row === START_NODE_ROW && col === START_NODE_COL,
-        isFinish: row === FINISH_NODE_ROW && col === FINISH_NODE_COL,
-        isVisited: false,
-        distance:
-          row === START_NODE_ROW && col === START_NODE_COL ? 0 : Infinity,
-        isWall: false,
-        weight: 1,
-      });
-    }
-    grid.push(currentRow);
-  }
-  return grid;
-}

@@ -6,6 +6,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Home from './Home/Home.jsx'
 import Sorting from './Home/Sorting/Sorting.jsx'
 import Graph from './Home/Graph/Graph.jsx'
+import PathFinder from './Home/PathFinder/PathFinder.jsx'
 
 
 const router = createBrowserRouter([
@@ -23,6 +24,10 @@ const router = createBrowserRouter([
       {
         path: '/graph',
         element: <Graph />
+      },
+      {
+        path: '/path',
+        element: <PathFinder />
       }
     ] 
   }

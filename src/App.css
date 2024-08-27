@@ -37,3 +37,18 @@
 .read-the-docs {
   color: #888;
 }
+
+
+
+.choice-box {
+  transition: all 0.3s ease;
+}
+
+input[type="radio"]:checked + .choice-box {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 2px white, 0 0 0 4px #4299e1;
+}
+
+label:hover .choice-box {
+  transform: scale(1.05);
+}

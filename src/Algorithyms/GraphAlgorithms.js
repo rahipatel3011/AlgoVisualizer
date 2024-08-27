@@ -18,7 +18,7 @@ export function bfs(grid, startNode) {
     const neighbourNodes = getClosestNodes(newGrid, currNode, queue);
     queue.push(...neighbourNodes);
   }
-  return undefined
+  return undefined;
 }
 
 export function dfs(grid, startNode) {
@@ -42,33 +42,46 @@ export function dfs(grid, startNode) {
     const neighbourNodes = getClosestNodes(newGrid, currNode, stack);
     stack.push(...neighbourNodes);
   }
-  return undefined
+  return undefined;
 }
 
-export function dijkstra(grid, startNode) {
+export function dijkstra(grid) {
+  //find startNode
+  let startNode;
+  for (let i = 0; i < grid.length; i++) {
+    for (let j = 0; j < grid[i].length; j++) {
+      if (grid[i][j].isStart) {
+        startNode = grid[i][j];
+        break;
+      }
+    }
+  }
+
   const newGrid = structuredClone(grid);
   const nodesInOrder = [];
+  startNode.distance = 0;
   const { row, col } = startNode;
   // console.log(startNode);
-  const queue = [newGrid[row][col]];
+  let queue = [newGrid[row][col]];
 
   while (queue.length > 0) {
+    queue = queue.sort((a, b) => a.distance - b.distance);
     const currNode = queue.shift();
+    currNode.isVisited = true;    
     nodesInOrder.push(currNode);
-    currNode.isVisited = true;
-    const { row, col } = currNode;
-    newGrid[row][col] = currNode;
+
+    
     if (currNode.isFinish) {
       const shortestPath = findShortestPath(nodesInOrder);
       return [nodesInOrder, shortestPath];
     }
 
     const neighbourNodes = getClosestNodes(newGrid, currNode, queue);
+    
     queue.push(...neighbourNodes);
-    sortList(queue);
   }
   // return undefine if there is no path from start to finish node
-  return [undefined,undefined]
+  return [undefined, undefined];
 }
 
 function findShortestPath(inOrderNodeList) {
@@ -89,33 +102,21 @@ function getClosestNodes(grid, node, list) {
   const { row, col } = node;
   if (row > 0) {
     const upperNode = grid[row - 1][col];
-    if (!upperNode.isWall) {
-      upperNode.distance = node.distance + 1;
-      !isInList(upperNode, list) && neighbours.push(upperNode);
-    }
+    list = updateNeighbours(list, upperNode, node, neighbours);
   }
   if (row < grid.length - 1) {
     const lowerNode = grid[row + 1][col];
-    if (!lowerNode.isWall) {
-      lowerNode.distance = node.distance + 1;
-      !isInList(lowerNode, list) && neighbours.push(lowerNode);
-    }
+    list = updateNeighbours(list, lowerNode, node, neighbours);
   }
+
   if (col < grid[0].length - 1) {
     const rightNode = grid[row][col + 1];
-    if (!rightNode.isWall) {
-      rightNode.distance = node.distance + 1;
-      !isInList(rightNode, list) && neighbours.push(rightNode);
-    }
+    list = updateNeighbours(list, rightNode, node, neighbours);
   }
   if (col > 0) {
     const leftNode = grid[row][col - 1];
-    if (!leftNode.isWall) {
-      leftNode.distance = node.distance + 1;
-      !isInList(leftNode, list) && neighbours.push(leftNode);
-    }
+    list = updateNeighbours(list, leftNode, node, neighbours);
   }
-
   const unvisitedNeighbours = neighbours.filter(
     (neighbour) => !neighbour.isVisited
   );
@@ -123,6 +124,23 @@ function getClosestNodes(grid, node, list) {
   //updating parent node to each neighbour
   unvisitedNeighbours.forEach((neighbour) => (neighbour.parent = node));
   return unvisitedNeighbours;
+}
+
+function updateNeighbours(list, neighbourNode, node, neighbours) {
+  if (!neighbourNode.isWall && !neighbourNode.isStart && !neighbourNode.isVisited) {
+    if (
+      isInList(neighbourNode, list) &&
+      node.distance + neighbourNode.weight < neighbourNode.distance
+    ) {
+      list.forEach((item) => item === neighbourNode? item.distance=node.distance + neighbourNode.weight: item.distance);
+      neighbourNode.distance = node.distance + neighbourNode.weight;
+      neighbours.push(neighbourNode);
+    } else if (!isInList(neighbourNode, list)) {
+      neighbourNode.distance = node.distance + neighbourNode.weight;
+      neighbours.push(neighbourNode);
+    }
+  }
+  return list;
 }
 
 export async function animateAlgorithm(inOrderNodeList, shortestPath) {
@@ -184,10 +202,17 @@ const isInList = (node, list) => {
   return false;
 };
 
-const randomInt = (min, max) => {
-  return Math.floor(min + Math.random() * (max - min));
-};
-
 function sortList(list) {
-  list.sort((nodeA, nodeB) => nodeA.weight - nodeB.weight);
+  return list.sort((nodeA, nodeB) => nodeA.weight - nodeB.weight);
 }
+
+/*
+if (row < grid.length - 1) {
+    const lowerNode = grid[row + 1][col];
+    if (!lowerNode.isWall) {
+      lowerNode.distance = node.distance + lowerNode.weight;
+      !isInList(lowerNode, list) && neighbours.push(lowerNode);
+      // need to perform relaxation in list if it's already add to list
+    }
+  }
+*/
